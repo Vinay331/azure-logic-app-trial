@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_logic_app_trial_name": {
+            "defaultValue": "logic-app-trial",
+            "type": "String"
+        },
+        "connections_gmail_externalid": {
+            "defaultValue": "/subscriptions/6052bf65-d129-41eb-acdd-6cc7785805ce/resourceGroups/vinay-res-group/providers/Microsoft.Web/connections/gmail",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_logic_app_trial_name')]",
+            "location": "eastus",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "When_a_HTTP_request_is_received": {
+                            "type": "Request",
+                            "kind": "Http"
+                        }
+                    },
+                    "actions": {
+                        "Send_email_(V2)": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['gmail']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": {
+                                    "To": "0vinayshastri@gmail.com",
+                                    "Subject": "Azure Logic app trial",
+                                    "Body": "<p>Hi The azure logic app trial done successfully</p><br>"
+                                },
+                                "path": "/v2/Mail"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "gmail": {
+                                "id": "/subscriptions/6052bf65-d129-41eb-acdd-6cc7785805ce/providers/Microsoft.Web/locations/eastus/managedApis/gmail",
+                                "connectionId": "[parameters('connections_gmail_externalid')]",
+                                "connectionName": "gmail"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
